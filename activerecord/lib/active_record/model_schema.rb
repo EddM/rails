@@ -63,7 +63,17 @@ module ActiveRecord
     #   records, artists => artists_records
     #   music_artists, music_records => music_artists_records
     def self.derive_join_table_name(first_table, second_table) # :nodoc:
-      [first_table.to_s, second_table.to_s].sort.join("\0").gsub(/^(.*_)(.+)\0\1(.+)/, '\1\2_\3').tr("\0", "_")
+      table_name_prefix = ActiveRecord::Base.table_name_prefix
+      table_name_suffix = ActiveRecord::Base.table_name_suffix
+      first_table_name = first_table.to_s.gsub(/^#{table_name_prefix}/, "")
+      last_table_name = second_table.to_s.gsub(/#{table_name_suffix}$/, "")
+
+      join_table_name = [first_table_name, last_table_name].
+                        sort.
+                        join("\0").
+                        gsub(/^(.*_)(.+)\0\1(.+)/, '\1\2_\3').tr("\0", "_")
+
+      "#{table_name_prefix}#{join_table_name}#{table_name_suffix}"
     end
 
     module ClassMethods
